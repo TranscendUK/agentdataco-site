@@ -10,10 +10,11 @@ const PROTOCOLS = ['2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05'];
 const FEED_NAMES = Object.keys(FEEDS);
 const call = (handler, query, headers) => new Promise((resolve, reject) => {
   const res = { statusCode: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, status(c) { this.statusCode = c; return this; }, json(b) { resolve({ status: this.statusCode, body: b }); }, send(b) { resolve({ status: this.statusCode, body: b }); }, end() { resolve({ status: this.statusCode, body: null }); } };
-  Promise.resolve(handler({ method: 'GET', query, headers: { authorization: headers.authorization || '' } }, res)).catch(reject);
+  Promise.resolve(handler({ method: 'GET', query, headers: { authorization: headers.authorization || '', 'x-adc-channel': 'mcp' } }, res)).catch(reject);
 });
 const strArgs = { q: { type: 'string', description: 'Case-insensitive full-text filter' }, since: { type: 'string', description: 'ISO date; only rows created/updated on or after' }, limit: { type: 'integer', minimum: 1, maximum: 1000, default: 50 }, offset: { type: 'integer', minimum: 0, default: 0 } };
 const TOOLS = [
+  { name: 'get_momentum_leaderboard', free: true, description: 'Free: ADC Momentum leaderboard (0-100 score from growth velocity, consistency, recency and agent demand in our daily archive) for GitHub AI repos, MCP servers, LLMs and Hugging Face items, plus what AI agents looked up most this week (Agent Demand Index).', inputSchema: { type: 'object', properties: { feed: { type: 'string', enum: ['github-ai-repos', 'mcp-servers', 'llm-pricing', 'hf-trending'] }, limit: { type: 'integer', minimum: 1, maximum: 100, default: 25 } } } },
   { name: 'list_feeds', free: true, description: 'List the Agent Data Co feeds (AI-ecosystem datasets), their sources and update times. Free, no API key.', inputSchema: { type: 'object', properties: {} } },
   { name: 'get_sample', free: true, description: 'Free sample: 5 latest rows from one or all feeds. No API key needed.', inputSchema: { type: 'object', properties: { feed: { type: 'string', enum: FEED_NAMES } } } },
   { name: 'lookup_entity', free: true, description: 'Free: latest public metrics and recent daily values for one tracked entity (top ~2,000 entities: GitHub repo owner/name, MCP server name, OpenRouter model id, pricing page URL, or hf "<type>:<id>"). Full history needs a key (get_history).', inputSchema: { type: 'object', required: ['feed', 'entity'], properties: { feed: { type: 'string', enum: Object.keys(CFG) }, entity: { type: 'string' } } } },
@@ -28,11 +29,13 @@ async function runTool(name, a, headers) {
   if (!t.free && !hasKey) return { isError: true, text: NEED_KEY };
   let r;
   if (name === 'list_feeds') { const s = await call(feedHandler, { feed: 'sample' }, {}); r = { status: 200, body: Object.fromEntries(Object.entries(s.body.feeds).map(([k, v]) => [k, { title: v.title, rows: v.total, updatedAt: v.updatedAt, source: FEEDS[k].source }])) }; }
+  else if (name === 'get_momentum_leaderboard') { const lb = await call(feedHandler, { feed: 'momentum', ...(a.feed ? { category: a.feed } : {}), limit: String(a.limit ?? 25) }, {}); const d = await call(feedHandler, { feed: 'demand' }, {}); r = { status: lb.status, body: { ...lb.body, mostLookedUpByAgentsThisWeek: d.body?.agentDemandIndex?.mostLookedUp?.slice(0, 10) || [] } }; }
   else if (name === 'get_sample') r = await call(feedHandler, { feed: 'sample', ...(a.feed ? { name: a.feed } : {}) }, {});
   else if (name === 'lookup_entity') {
     if (!CFG[a.feed]) return { isError: true, text: `feed must be one of ${Object.keys(CFG).join(', ')}` };
     const doc = await readJSON(`pages/${a.feed}.json`); const e = doc?.entities?.[a.entity];
-    r = e ? { status: 200, body: { feed: a.feed, entity: a.entity, page: `https://agentdataco.com${e.path}`, snapshot: doc.date, latest: e.latest, info: e.info, recent: e.series.slice(-7), more: 'Full history: get_history (API key).' } } : { status: 404, body: { error: 'Entity not in the free lookup index (top ~2,000). Try get_history with a key, or the exact id (e.g. owner/repo, OpenRouter id).' } };
+    if (e) await require('../lib/demand').log('mcp', a.feed, a.entity);
+    r = e ? { status: 200, body: { feed: a.feed, entity: a.entity, page: `https://agentdataco.com${e.path}`, snapshot: doc.date, adcMomentum: e.momentum || null, latest: e.latest, info: e.info, recent: e.series.slice(-7), more: 'Full history: get_history (API key).' } } : { status: 404, body: { error: 'Entity not in the free lookup index (top ~2,000). Try get_history with a key, or the exact id (e.g. owner/repo, OpenRouter id).' } };
   }
   else if (t.feed) r = await call(feedHandler, { ...a, limit: String(a.limit ?? 50), feed: t.feed }, headers);
   else if (name === 'get_history') r = await call(historyHandler, { ...a, ...(a.limit != null ? { limit: String(a.limit) } : {}) }, headers);
@@ -45,7 +48,7 @@ async function handle(m, headers) {
   if (!m || m.jsonrpc !== '2.0' || typeof m.method !== 'string') return err(m?.id, -32600, 'Invalid Request');
   const notification = m.id === undefined;
   switch (m.method) {
-    case 'initialize': { const v = m.params?.protocolVersion; return ok(m.id, { protocolVersion: PROTOCOLS.includes(v) ? v : PROTOCOLS[0], capabilities: { tools: { listChanged: false } }, serverInfo: { name: 'agentdataco', title: 'Agent Data Co', version: '1.0.0', websiteUrl: 'https://agentdataco.com' }, instructions: 'Daily AI-ecosystem data: GitHub AI/MCP repos, MCP registry, Hugging Face trending, LLM pricing, AI pricing pages, Show HN AI launches; with history and trends. Free: list_feeds, get_sample, lookup_entity. Others need Authorization: Bearer <key> (https://agentdataco.com/#pricing).' }); }
+    case 'initialize': { const v = m.params?.protocolVersion; return ok(m.id, { protocolVersion: PROTOCOLS.includes(v) ? v : PROTOCOLS[0], capabilities: { tools: { listChanged: false } }, serverInfo: { name: 'agentdataco', title: 'Agent Data Co', version: '1.0.0', websiteUrl: 'https://agentdataco.com' }, instructions: 'Daily AI-ecosystem data: GitHub AI/MCP repos, MCP registry, Hugging Face trending, LLM pricing, AI pricing pages, Show HN AI launches; with history and trends. Free: list_feeds, get_sample, lookup_entity, get_momentum_leaderboard. Others need Authorization: Bearer <key> (https://agentdataco.com/#pricing).' }); }
     case 'ping': return ok(m.id, {});
     case 'tools/list': return ok(m.id, { tools: TOOLS.map(({ name, description, inputSchema, free }) => ({ name, title: name.replace(/_/g, ' '), description, inputSchema, annotations: { readOnlyHint: true, openWorldHint: false }, _meta: { 'agentdataco/requiresKey': !free } })) });
     case 'tools/call': {

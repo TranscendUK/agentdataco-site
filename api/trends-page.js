@@ -5,6 +5,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 const LINK = { 'github-ai-repos': (id) => `https://github.com/${id}`, 'show-hn-ai': (id) => `https://news.ycombinator.com/item?id=${id}`, 'hf-trending': (id) => { const [t, ...r] = id.split(':'); const x = r.join(':'); return `https://huggingface.co/${t === 'model' ? '' : t + 's/'}${x}`; } };
 const TITLES = { 'github-ai-repos': ['GitHub AI agent & MCP repos — most stars gained', 'stars'], 'hf-trending': ['Hugging Face — most likes gained', 'likes'], 'show-hn-ai': ['Show HN AI launches — most points gained', 'points'] };
 module.exports = async (req, res) => {
+  if (req.query.view === 'demand' || req.query.view === 'leaderboard') return view(req, res);
   const t = await readJSON('trends/latest.json');
   let body = '<main><section><h1>AI ecosystem trends</h1>';
   if (!t) body += '<p>Trends are generated daily from our archive. Check back tomorrow.</p>';
@@ -27,3 +28,35 @@ module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
   res.status(200).send(HEAD + body + FOOT);
 };
+
+// /demand (Agent Demand Index) and /leaderboard (ADC Momentum) share this function (Hobby plan: no new functions).
+const demand = require('../lib/demand');
+const { momentumMap, CFG } = require('../lib/pages');
+const { METHOD } = require('../lib/momentum');
+const H = require('../lib/html');
+const NAMES = { 'github-ai-repos': 'GitHub AI repos', 'mcp-servers': 'MCP servers', 'llm-pricing': 'LLM models', 'hf-trending': 'Hugging Face', 'ai-pricing': 'AI pricing pages', 'show-hn-ai': 'Show HN AI' };
+async function view(req, res) {
+  let html;
+  if (req.query.view === 'demand') {
+    const w = await demand.week();
+    const rows = w.mostLookedUp.map((x, i) => `<tr><td>${i + 1}</td><td><a href="${esc(new URL(x.page).pathname)}">${esc(x.name)}</a></td><td>${esc(NAMES[x.feed] || x.feed)}</td><td>${x.lookups}</td><td>${x.momentum ?? ''}</td></tr>`).join('');
+    html = H.head({ title: 'Agent Demand Index: what AI agents look up most this week | Agent Data Co', desc: 'The AI repos, MCP servers, models and tools that AI agents queried most via the Agent Data Co API and MCP server in the last 7 days. Anonymised, aggregated, updated continuously.', canonical: 'https://agentdataco.com/demand' })
+      + `<main><section><h1>Agent Demand Index</h1><p class="lead">Most looked-up by AI agents this week: which AI-ecosystem entities agents and apps query through our <a href="/docs">REST API</a> and <a href="/docs#mcp">MCP server</a>. A usage signal that exists only here and grows with every query.</p>
+<p class="small">Window ${esc(w.window)} · ${w.totalLookups} lookups (API ${w.channels.api || 0}, MCP ${w.channels.mcp || 0}). Anonymised and aggregated: we store counts only, never keys, IPs or users. Only tracked entities are listed. JSON: <a href="/api/v1/demand">/api/v1/demand</a></p>
+${rows ? `<table><thead><tr><th>#</th><th>Entity</th><th>Category</th><th>Lookups (7d)</th><th>ADC Momentum</th></tr></thead><tbody>${rows}</tbody></table>` : '<p>Collecting: the index started on 2026-10-14 and fills in as agents query the API and MCP server. Check back soon.</p>'}
+${w.feeds.length ? `<h2>Most queried feeds</h2><table><tbody>${w.feeds.map((f) => `<tr><td>${esc(NAMES[f.feed] || f.feed)}</td><td>${f.lookups}</td></tr>`).join('')}</tbody></table>` : ''}
+<p><a href="/leaderboard">ADC Momentum leaderboard</a> · <a href="/trends">Trends</a></p></section></main>` + H.FOOT;
+  } else {
+    let body = '';
+    for (const f of ['github-ai-repos', 'mcp-servers', 'llm-pricing', 'hf-trending']) {
+      const top = Object.entries(await momentumMap(f)).sort((a, b) => b[1].score - a[1].score).slice(0, 25);
+      body += `<h2>${esc(NAMES[f])}</h2>` + (top.length ? `<table><thead><tr><th>#</th><th>Entity</th><th>Momentum</th><th>Change</th></tr></thead><tbody>${top.map(([id, m], i) => `<tr><td>${i + 1}</td><td><a href="${esc(new URL(m.page).pathname)}">${esc(id.replace(/^\w+:/, ''))}</a></td><td>${m.score}</td><td>${m.change == null ? '' : (m.change > 0 ? '+' : '') + m.change}</td></tr>`).join('')}</tbody></table>` : '<p class="small">Scores appear after the next daily refresh.</p>');
+    }
+    html = H.head({ title: 'ADC Momentum leaderboard: fastest-rising AI repos, MCP servers, models | Agent Data Co', desc: 'ADC Momentum: a 0-100 score per AI repo, MCP server, LLM and Hugging Face item from growth velocity, consistency, recency and agent demand in our daily archive.', canonical: 'https://agentdataco.com/leaderboard' })
+      + `<main><section><h1>ADC Momentum leaderboard</h1><p class="lead">One 0-100 score per entity, recomputed daily from Agent Data Co's append-only archive. Every entity page has an embeddable badge.</p>${body}
+<h2 id="method">Method</h2><p>${esc(METHOD)}</p><p class="small">JSON: <a href="/api/v1/momentum">/api/v1/momentum</a> (<code>?category=github-ai-repos&amp;limit=100</code>) · MCP tool <code>get_momentum_leaderboard</code> · Badge: <code>https://agentdataco.com/badge/&lt;entity page path&gt;.svg</code></p><p><a href="/demand">Agent Demand Index</a> · <a href="/trends">Trends</a></p></section></main>` + H.FOOT;
+  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+  res.status(200).send(html);
+}

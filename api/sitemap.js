@@ -1,6 +1,6 @@
 const { readJSON } = require('../lib/store');
 const { CFG } = require('../lib/pages');
-const STATIC = ['/', '/docs', '/trends', '/llms.txt', '/privacy', '/terms'];
+const STATIC = ['/', '/docs', '/trends', '/demand', '/leaderboard', '/llms.txt', '/privacy', '/terms'];
 module.exports = async (req, res) => {
   const docs = await Promise.all(Object.keys(CFG).map((f) => readJSON(`pages/${f}.json`).catch(() => null)));
   const urls = STATIC.map((p) => `<url><loc>https://agentdataco.com${p}</loc><changefreq>daily</changefreq></url>`);
