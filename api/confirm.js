@@ -1,5 +1,6 @@
 const{readToken}=require('./_lib');
 module.exports=async(req,res)=>{
+  if(req.query.c){const v=readToken(req.query.t);const m=/^claim\|(.+)\|(.+)$/.exec(v||'');const ok=m&&m[1]===req.query.c&&await require('../lib/claims').verify(m[1],m[2]).catch(()=>false);res.writeHead(302,{Location:ok?'/confirmed?claim=1':'/confirm-error'});return res.end()}
   const email=readToken(req.query.t);
   if(!email){res.writeHead(302,{Location:'/confirm-error'});return res.end()}
   const H={Authorization:`Bearer ${process.env.RESEND_CONTACTS_KEY}`,'Content-Type':'application/json'};

@@ -3,6 +3,7 @@ module.exports=async(req,res)=>{
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   const b=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
   if(b.website)return res.status(200).json({ok:true});
+  if(b.type==='claim'){const r=await require('../lib/claims').submit(b);return res.status(r.status).json(r.body)}
   const email=String(b.email||'').trim().toLowerCase();
   if(!validEmail(email))return res.status(400).json({error:'Please enter a valid email address.'});
   const url=`https://agentdataco.com/api/confirm?t=${encodeURIComponent(makeToken(email))}`;
