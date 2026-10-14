@@ -1,0 +1,87 @@
+{
+ "outputDirectory": "public",
+ "cleanUrls": true,
+ "trailingSlash": false,
+ "headers": [
+  {
+   "source": "/llms.txt",
+   "headers": [
+    {
+     "key": "Content-Type",
+     "value": "text/plain; charset=utf-8"
+    }
+   ]
+  },
+  {
+   "source": "/9f3c2a7e5b1d4c8a6e0f2b4d7a9c1e3f.txt",
+   "headers": [
+    {
+     "key": "Content-Type",
+     "value": "text/plain; charset=utf-8"
+    }
+   ]
+  }
+ ],
+ "redirects": [
+  {
+   "source": "/:path*",
+   "has": [
+    {
+     "type": "host",
+     "value": "www.agentdataco.com"
+    }
+   ],
+   "destination": "https://agentdataco.com/:path*",
+   "permanent": true
+  }
+ ],
+ "crons": [
+  {
+   "path": "/api/cron/refresh",
+   "schedule": "17 5 * * *"
+  }
+ ],
+ "functions": {
+  "api/cron/refresh.js": {
+   "maxDuration": 300
+  }
+ },
+ "rewrites": [
+  {
+   "source": "/.well-known/mcp-registry-auth",
+   "destination": "/mcp-registry-auth.txt"
+  },
+  {
+   "source": "/trends",
+   "destination": "/api/trends-page"
+  },
+  {
+   "source": "/mcp",
+   "destination": "/api/mcp"
+  },
+  {
+   "source": "/sitemap.xml",
+   "destination": "/api/sitemap"
+  },
+  {
+   "source": "/repo/:p+",
+   "destination": "/api/page?k=repo&p=:p*"
+  },
+  {
+   "source": "/mcp/:p+",
+   "destination": "/api/page?k=mcp&p=:p*"
+  },
+  {
+   "source": "/llm/:p+",
+   "destination": "/api/page?k=llm&p=:p*"
+  },
+  {
+   "source": "/pricing/:p+",
+   "destination": "/api/page?k=pricing&p=:p*"
+  },
+  {
+   "source": "/hf/:p+",
+   "destination": "/api/page?k=hf&p=:p*"
+  }
+ ]
+}

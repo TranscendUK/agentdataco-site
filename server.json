@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.agentdataco/api",
+  "title": "Agent Data Co",
+  "description": "Daily AI-ecosystem data: GitHub AI/MCP repos, MCP registry, HF trending, LLM pricing, with history.",
+  "version": "1.0.0",
+  "websiteUrl": "https://agentdataco.com/docs#mcp",
+  "repository": { "url": "https://github.com/TranscendUK/agentdataco-site", "source": "github" },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://agentdataco.com/mcp",
+      "headers": [
+        { "name": "Authorization", "description": "Optional: Bearer <Agent Data Co API key> for full feeds, history and trends. Free tools work without it.", "isRequired": false, "isSecret": true }
+      ]
+    }
+  ]
+}
