@@ -99,7 +99,7 @@
    "get": {
     "operationId": "show_hn_ai",
     "summary": "Show HN AI launches",
-    "description": "Show HN posts matching AI, LLM, GPT, MCP, agent, Claude, RAG… with points and comments, newest first. `since` filters on `created_at`.",
+    "description": "Show HN posts matching AI, LLM, GPT, MCP, agent, Claude, RAG\u2026 with points and comments, newest first. `since` filters on `created_at`.",
     "security": [
      {
       "bearerAuth": []
@@ -599,6 +599,118 @@
      }
     },
     "description": "Latest trends by default. Past `date` requires `feed` and must be within your plan history. Counts toward the daily history/trends fair-use cap (200 Starter / 1,000 Pro)."
+   }
+  },
+  "/api/v1/momentum": {
+   "get": {
+    "summary": "ADC Momentum leaderboard (free)",
+    "parameters": [
+     {
+      "name": "category",
+      "in": "query",
+      "schema": {
+       "type": "string",
+       "enum": [
+        "github-ai-repos",
+        "mcp-servers",
+        "llm-pricing",
+        "hf-trending"
+       ]
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "maximum": 100
+      }
+     }
+    ],
+    "security": [],
+    "responses": {
+     "200": {
+      "description": "Leaderboard"
+     }
+    }
+   }
+  },
+  "/api/v1/demand": {
+   "get": {
+    "summary": "Agent Demand Index: most looked-up entities by AI agents this week (free)",
+    "security": [],
+    "responses": {
+     "200": {
+      "description": "Demand index"
+     }
+    }
+   }
+  },
+  "/api/v1/watches": {
+   "get": {
+    "summary": "List watches",
+    "responses": {
+     "200": {
+      "description": "Watches"
+     }
+    }
+   },
+   "post": {
+    "summary": "Add a watch (Starter 5, Pro 50)",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "entity"
+        ],
+        "properties": {
+         "entity": {
+          "type": "string",
+          "description": "Entity page path, e.g. /repo/owner/name"
+         },
+         "type": {
+          "type": "string",
+          "enum": [
+           "any",
+           "price_change",
+           "version_bump",
+           "momentum_jump",
+           "momentum_above"
+          ]
+         },
+         "threshold": {
+          "type": "number"
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Added"
+     }
+    }
+   },
+   "delete": {
+    "summary": "Delete a watch",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Deleted"
+     }
+    }
    }
   }
  },

@@ -27,11 +27,17 @@
 
 ## MCP server
 - Remote MCP endpoint (Streamable HTTP): https://agentdataco.com/mcp — docs: https://agentdataco.com/docs#mcp
-- Free tools (no key): list_feeds, get_sample, lookup_entity
+- Free tools (no key): list_feeds, get_sample, lookup_entity, get_momentum_leaderboard
 - Keyed tools (Authorization: Bearer <key>): get_github_ai_repos, get_show_hn_ai, get_mcp_servers, get_hf_trending, get_llm_pricing, get_ai_pricing, get_history, get_trends
 
 ## Entity pages (daily)
 - /repo/<owner>/<name>, /mcp/<server>, /llm/<provider>/<model>, /pricing/<vendor>, /hf/<type>/<id> — latest metrics + history; full list in https://agentdataco.com/sitemap.xml
+
+## Momentum, demand, badges, alerts
+- [ADC Momentum leaderboard](https://agentdataco.com/leaderboard): 0-100 score per repo/MCP server/LLM/HF item from growth velocity, consistency, recency and agent demand; JSON /api/v1/momentum
+- [Agent Demand Index](https://agentdataco.com/demand): most looked-up by AI agents this week via our API/MCP (anonymised); JSON /api/v1/demand
+- Badges: https://agentdataco.com/badge/<entity page path>.svg
+- Watches + email alerts for paid keys: /api/v1/watches (Starter 5, Pro 50)
 
 ## Other
 - [Newsletter](https://agentdataco.com/#newsletter): Agent Data Weekly, double opt-in.
