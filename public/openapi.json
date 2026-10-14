@@ -1,0 +1,621 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Agent Data Co API",
+  "version": "1.0.0",
+  "description": "Structured, daily-refreshed data feeds on the AI ecosystem. Starter plan: $19/month, 10,000 requests/month.",
+  "contact": {
+   "email": "hello@agentdataco.com",
+   "url": "https://agentdataco.com/docs"
+  }
+ },
+ "servers": [
+  {
+   "url": "https://agentdataco.com"
+  }
+ ],
+ "security": [
+  {
+   "bearerAuth": []
+  }
+ ],
+ "paths": {
+  "/api/v1/github-ai-repos": {
+   "get": {
+    "operationId": "github_ai_repos",
+    "summary": "GitHub AI agent & MCP repos",
+    "description": "Repos tagged mcp, mcp-server, ai-agent(s), llm-agent, agentic-ai, autonomous-agents: top by stars plus new in the last 30 days. Stars, forks, language, license, topics. `since` filters on `created_at`.",
+    "security": [
+     {
+      "bearerAuth": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 100,
+       "minimum": 1,
+       "maximum": 1000
+      }
+     },
+     {
+      "name": "offset",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 0
+      }
+     },
+     {
+      "name": "since",
+      "in": "query",
+      "description": "ISO 8601 date/time; only rows whose date field is on/after it",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "q",
+      "in": "query",
+      "description": "Case-insensitive substring match across all fields",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "repo",
+      "in": "query",
+      "description": "Exact owner/name. Untracked repos are queued for daily collection.",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Feed rows",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FeedResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Missing/invalid/revoked key"
+     },
+     "429": {
+      "description": "Monthly request limit reached"
+     }
+    }
+   }
+  },
+  "/api/v1/show-hn-ai": {
+   "get": {
+    "operationId": "show_hn_ai",
+    "summary": "Show HN AI launches",
+    "description": "Show HN posts matching AI, LLM, GPT, MCP, agent, Claude, RAG\u2026 with points and comments, newest first. `since` filters on `created_at`.",
+    "security": [
+     {
+      "bearerAuth": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 100,
+       "minimum": 1,
+       "maximum": 1000
+      }
+     },
+     {
+      "name": "offset",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 0
+      }
+     },
+     {
+      "name": "since",
+      "in": "query",
+      "description": "ISO 8601 date/time; only rows whose date field is on/after it",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "q",
+      "in": "query",
+      "description": "Case-insensitive substring match across all fields",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Feed rows",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FeedResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Missing/invalid/revoked key"
+     },
+     "429": {
+      "description": "Monthly request limit reached"
+     }
+    }
+   }
+  },
+  "/api/v1/mcp-servers": {
+   "get": {
+    "operationId": "mcp_servers",
+    "summary": "MCP servers (official registry)",
+    "description": "Every active server in the official Model Context Protocol registry (latest versions): remotes, packages, repository. `since` filters on `publishedAt`.",
+    "security": [
+     {
+      "bearerAuth": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 100,
+       "minimum": 1,
+       "maximum": 1000
+      }
+     },
+     {
+      "name": "offset",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 0
+      }
+     },
+     {
+      "name": "since",
+      "in": "query",
+      "description": "ISO 8601 date/time; only rows whose date field is on/after it",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "q",
+      "in": "query",
+      "description": "Case-insensitive substring match across all fields",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Feed rows",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FeedResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Missing/invalid/revoked key"
+     },
+     "429": {
+      "description": "Monthly request limit reached"
+     }
+    }
+   }
+  },
+  "/api/v1/ai-pricing": {
+   "get": {
+    "operationId": "ai_pricing",
+    "summary": "AI & SaaS pricing pages",
+    "description": "Daily snapshots of public AI/SaaS pricing pages: extracted plans and prices, plus what changed since the previous snapshot. `since` filters on `snapshotAt`.",
+    "security": [
+     {
+      "bearerAuth": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 100,
+       "minimum": 1,
+       "maximum": 1000
+      }
+     },
+     {
+      "name": "offset",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 0
+      }
+     },
+     {
+      "name": "since",
+      "in": "query",
+      "description": "ISO 8601 date/time; only rows whose date field is on/after it",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "q",
+      "in": "query",
+      "description": "Case-insensitive substring match across all fields",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "url",
+      "in": "query",
+      "description": "Exact pricing page URL. Untracked https URLs are added to the daily watchlist.",
+      "schema": {
+       "type": "string",
+       "format": "uri"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Feed rows",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FeedResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Missing/invalid/revoked key"
+     },
+     "429": {
+      "description": "Monthly request limit reached"
+     }
+    }
+   }
+  },
+  "/api/v1/llm-pricing": {
+   "get": {
+    "operationId": "llm_pricing",
+    "summary": "LLM model pricing",
+    "description": "Every LLM on OpenRouter with $ per 1M input/output tokens, context length, modalities and new-model / price-change flags. `since` filters on `created`.",
+    "security": [
+     {
+      "bearerAuth": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 100,
+       "minimum": 1,
+       "maximum": 1000
+      }
+     },
+     {
+      "name": "offset",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 0
+      }
+     },
+     {
+      "name": "since",
+      "in": "query",
+      "description": "ISO 8601 date/time; only rows whose date field is on/after it",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "q",
+      "in": "query",
+      "description": "Case-insensitive substring match across all fields",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Feed rows",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FeedResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Missing/invalid/revoked key"
+     },
+     "429": {
+      "description": "Monthly request limit reached"
+     }
+    }
+   }
+  },
+  "/api/v1/hf-trending": {
+   "get": {
+    "operationId": "hf_trending",
+    "summary": "Hugging Face trending",
+    "description": "Top 100 trending models, Spaces and datasets with likes, downloads, task, license and trending score. `since` filters on `createdAt`.",
+    "security": [
+     {
+      "bearerAuth": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 100,
+       "minimum": 1,
+       "maximum": 1000
+      }
+     },
+     {
+      "name": "offset",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "default": 0
+      }
+     },
+     {
+      "name": "since",
+      "in": "query",
+      "description": "ISO 8601 date/time; only rows whose date field is on/after it",
+      "schema": {
+       "type": "string",
+       "format": "date-time"
+      }
+     },
+     {
+      "name": "q",
+      "in": "query",
+      "description": "Case-insensitive substring match across all fields",
+      "schema": {
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Feed rows",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FeedResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Missing/invalid/revoked key"
+     },
+     "429": {
+      "description": "Monthly request limit reached"
+     }
+    }
+   }
+  },
+  "/api/v1/sample": {
+   "get": {
+    "operationId": "sample",
+    "summary": "Free sample (no key): 5 rows from each feed",
+    "security": [],
+    "parameters": [
+     {
+      "name": "name",
+      "in": "query",
+      "description": "Optional single feed name",
+      "schema": {
+       "type": "string",
+       "enum": [
+        "github-ai-repos",
+        "show-hn-ai",
+        "mcp-servers",
+        "ai-pricing",
+        "llm-pricing",
+        "hf-trending"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Samples"
+     }
+    }
+   }
+  },
+  "/api/v1/{feed}/history": {
+   "get": {
+    "operationId": "history",
+    "summary": "Daily time series for one entity (Starter: last 30 days; Pro: full archive)",
+    "parameters": [
+     {
+      "name": "feed",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "github-ai-repos",
+        "show-hn-ai",
+        "mcp-servers",
+        "ai-pricing",
+        "llm-pricing",
+        "hf-trending"
+       ]
+      }
+     },
+     {
+      "name": "entity",
+      "in": "query",
+      "required": true,
+      "description": "github: owner/repo; show-hn: item id; mcp: server name; hf: model:<id>|space:<id>|dataset:<id>; llm: OpenRouter id; ai-pricing: page URL",
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "from",
+      "in": "query",
+      "schema": {
+       "type": "string",
+       "format": "date"
+      }
+     },
+     {
+      "name": "to",
+      "in": "query",
+      "schema": {
+       "type": "string",
+       "format": "date"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Rows {date, ...metrics, rank}"
+     }
+    }
+   }
+  },
+  "/api/v1/trends": {
+   "get": {
+    "operationId": "trends",
+    "summary": "Top movers (1d/7d/30d) and change events (new entities, price changes, version bumps)",
+    "parameters": [
+     {
+      "name": "window",
+      "in": "query",
+      "schema": {
+       "type": "string",
+       "enum": [
+        "1d",
+        "7d",
+        "30d"
+       ]
+      }
+     },
+     {
+      "name": "feed",
+      "in": "query",
+      "schema": {
+       "type": "string",
+       "enum": [
+        "github-ai-repos",
+        "show-hn-ai",
+        "mcp-servers",
+        "ai-pricing",
+        "llm-pricing",
+        "hf-trending"
+       ]
+      }
+     },
+     {
+      "name": "date",
+      "in": "query",
+      "schema": {
+       "type": "string",
+       "format": "date"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Trends"
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "securitySchemes": {
+   "bearerAuth": {
+    "type": "http",
+    "scheme": "bearer"
+   }
+  },
+  "schemas": {
+   "FeedResponse": {
+    "type": "object",
+    "properties": {
+     "feed": {
+      "type": "string"
+     },
+     "title": {
+      "type": "string"
+     },
+     "source": {
+      "type": "string"
+     },
+     "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "total": {
+      "type": "integer"
+     },
+     "offset": {
+      "type": "integer"
+     },
+     "limit": {
+      "type": "integer"
+     },
+     "count": {
+      "type": "integer"
+     },
+     "data": {
+      "type": "array",
+      "items": {
+       "type": "object"
+      }
+     }
+    }
+   }
+  }
+ }
+}

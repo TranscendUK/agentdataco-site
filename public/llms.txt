@@ -1,0 +1,37 @@
+# Agent Data Co
+
+> Agent Data Co sells structured, schedulable data feeds about the AI ecosystem (AI agents, MCP servers, AI launches, AI pricing, AI app reviews), built on official public APIs. Operated by Transcend UK Holdings Ltd (UK).
+
+## Live data feeds (Apify Store)
+- [GitHub AI Agent & MCP Repo Tracker](https://apify.com/agentdataco/github-ai-agent-tracker): Newly created and trending GitHub repos for AI agents, MCP servers, LLM agents and agentic frameworks — stars, forks, language, license, topics. Official GitHub Search API.
+- [Hacker News Show HN AI Launches](https://apify.com/agentdataco/hn-show-hn-ai-launches): Daily feed of Show HN posts about AI tools, agents, LLMs and MCP with points and comments. Official Algolia HN Search API, strict keyword matching.
+- [MCP Server Registry Exporter](https://apify.com/agentdataco/mcp-registry-exporter): Every published Model Context Protocol server from the official MCP registry as clean JSON — remotes, packages, status, versions.
+- [AI & SaaS Pricing Page Monitor](https://apify.com/agentdataco/ai-pricing-page-monitor): Snapshot AI and SaaS pricing pages, extract plans and prices, and get a diff of what changed since the last run.
+- [AI App Store Reviews](https://apify.com/agentdataco/ai-app-reviews): Latest App Store reviews for ChatGPT, Claude, Gemini, Grok, Perplexity, Copilot or any app, by country, with star filters.
+
+## Also available via the API
+- Hugging Face Trending (apify.com/agentdataco/huggingface-trending): Trending models, Spaces and datasets with likes, downloads, task, license and trending score.
+- LLM Model Pricing Feed (apify.com/agentdataco/llm-model-pricing-feed): Every LLM on OpenRouter with $/1M-token prices, context length and new-model / price-change detection.
+
+## API
+- [AI ecosystem trends](https://agentdataco.com/trends): daily top movers (GitHub AI/MCP repos, Hugging Face, Show HN) and LLM/pricing-page change events, generated from our daily snapshot archive.
+- History & trends: /api/v1/<feed>/history?entity=&from=&to= (per-entity daily time series; Starter 30 days, Pro full archive) and /api/v1/trends?window=1d|7d|30d.
+- [API docs](https://agentdataco.com/docs): JSON endpoints, auth, parameters, curl examples.
+- [OpenAPI spec](https://agentdataco.com/openapi.json)
+- [Free sample, no key](https://agentdataco.com/api/v1/sample): 5 rows from every feed.
+- Endpoints (Authorization: Bearer <key>; params limit, offset, since, q): /api/v1/github-ai-repos, /api/v1/show-hn-ai, /api/v1/mcp-servers, /api/v1/ai-pricing, /api/v1/llm-pricing, /api/v1/hf-trending. Refreshed daily.
+- [Agent Data Co API — Starter](https://buy.stripe.com/eVq8wR3JRcyt6U59uLa7C00): $19/month, latest data from all feeds + 30-day history, 10,000 requests/month; API key emailed instantly after checkout.
+- [Agent Data Co API — Pro](https://buy.stripe.com/14AdRb5RZ6a57Y90Yfa7C01): $49/month, full snapshot archive, trends, priority watchlist, 100,000 requests/month. Stripe is merchant of record via Managed Payments.
+
+## MCP server
+- Remote MCP endpoint (Streamable HTTP): https://agentdataco.com/mcp — docs: https://agentdataco.com/docs#mcp
+- Free tools (no key): list_feeds, get_sample, lookup_entity
+- Keyed tools (Authorization: Bearer <key>): get_github_ai_repos, get_show_hn_ai, get_mcp_servers, get_hf_trending, get_llm_pricing, get_ai_pricing, get_history, get_trends
+
+## Entity pages (daily)
+- /repo/<owner>/<name>, /mcp/<server>, /llm/<provider>/<model>, /pricing/<vendor>, /hf/<type>/<id> — latest metrics + history; full list in https://agentdataco.com/sitemap.xml
+
+## Other
+- [Newsletter](https://agentdataco.com/#newsletter): Agent Data Weekly, double opt-in.
+- [Privacy](https://agentdataco.com/privacy) · [Terms](https://agentdataco.com/terms)
+- Contact: hello@agentdataco.com
