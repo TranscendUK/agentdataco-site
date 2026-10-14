@@ -1,0 +1,1 @@
+{"name":"agentdataco-site","private":true,"dependencies":{"@vercel/blob":"^2.8.2","cheerio":"^1.2.0"}}
