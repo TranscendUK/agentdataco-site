@@ -99,7 +99,7 @@
    "get": {
     "operationId": "show_hn_ai",
     "summary": "Show HN AI launches",
-    "description": "Show HN posts matching AI, LLM, GPT, MCP, agent, Claude, RAG\u2026 with points and comments, newest first. `since` filters on `created_at`.",
+    "description": "Show HN posts matching AI, LLM, GPT, MCP, agent, Claude, RAG… with points and comments, newest first. `since` filters on `created_at`.",
     "security": [
      {
       "bearerAuth": []
@@ -472,7 +472,7 @@
   "/api/v1/{feed}/history": {
    "get": {
     "operationId": "history",
-    "summary": "Daily time series for one entity (Starter: last 30 days; Pro: full archive)",
+    "summary": "Daily time series for one entity (Starter: last 30 days; Pro: full archive). Max 90-day window, paginated.",
     "parameters": [
      {
       "name": "feed",
@@ -514,13 +514,39 @@
        "type": "string",
        "format": "date"
       }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "schema": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 90,
+       "default": 31
+      }
+     },
+     {
+      "name": "cursor",
+      "in": "query",
+      "description": "nextCursor from previous page",
+      "schema": {
+       "type": "string",
+       "format": "date"
+      }
      }
     ],
     "responses": {
      "200": {
       "description": "Rows {date, ...metrics, rank}"
+     },
+     "400": {
+      "description": "Missing entity, bad dates, or window > 90 days"
+     },
+     "429": {
+      "description": "Daily history/trends limit reached (code daily_history_limit) or key throttled for bulk-extraction velocity (code velocity_throttled); see Retry-After"
      }
-    }
+    },
+    "description": "Requires a specific entity; there is no whole-feed history endpoint. Max 90 days between from and to; page size `limit` 1-90 (default 31), follow `nextCursor`. Fair use: 200 (Starter) / 1,000 (Pro) history+trends calls per key per day; keys requesting many distinct entities/dates abnormally fast are throttled for 1 hour. Bulk/full-archive access requires a data licence (from $499/mo, hello@agentdataco.com)."
    }
   },
   "/api/v1/trends": {
@@ -567,8 +593,12 @@
     "responses": {
      "200": {
       "description": "Trends"
+     },
+     "429": {
+      "description": "Daily history/trends limit reached (code daily_history_limit) or key throttled for bulk-extraction velocity (code velocity_throttled); see Retry-After"
      }
-    }
+    },
+    "description": "Latest trends by default. Past `date` requires `feed` and must be within your plan history. Counts toward the daily history/trends fair-use cap (200 Starter / 1,000 Pro)."
    }
   }
  },
