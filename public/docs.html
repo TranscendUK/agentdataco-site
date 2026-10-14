@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>API docs — Agent Data Co</title><meta name="description" content="Structured, schedulable data feeds on the AI ecosystem: trending AI agent & MCP repos, Show HN AI launches, the MCP server registry, AI pricing changes and AI app reviews."><link rel="canonical" href="https://agentdataco.com/docs">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Agent Data Co"><meta property="og:title" content="Agent Data Co — AI ecosystem data feeds for agents & analysts"><meta property="og:description" content="Structured, schedulable data feeds on the AI ecosystem: trending AI agent & MCP repos, Show HN AI launches, the MCP server registry, AI pricing changes and AI app reviews."><meta property="og:url" content="https://agentdataco.com/"><meta property="og:image" content="https://agentdataco.com/og.svg">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Agent Data Co — AI ecosystem data feeds for agents & analysts"><meta name="twitter:description" content="Structured, schedulable data feeds on the AI ecosystem: trending AI agent & MCP repos, Show HN AI launches, the MCP server registry, AI pricing changes and AI app reviews.">
+<link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css"></head><body>
+<header><a class="logo" href="/">◆ Agent Data Co</a><nav><a href="/#feeds">Feeds</a><a href="/#pricing">Pricing</a><a href="/#newsletter">Newsletter</a><a href="mailto:hello@agentdataco.com">Contact</a></nav></header><main><section><div id="welcome" class="panel" style="display:none"><h2>Welcome aboard 🎉</h2><p>Thanks for subscribing. Your API key is on its way to the email you used at checkout (check spam if it hasn't arrived in a few minutes). Then try the examples below, or connect your agent via <a href="#mcp">MCP</a>. Questions: <a href="mailto:hello@agentdataco.com">hello@agentdataco.com</a>.</p></div><script>if(/[?&]welcome=1/.test(location.search))document.getElementById('welcome').style.display='block'</script><h1>API documentation</h1><p class="lead">All Agent Data Co feeds as JSON, refreshed daily (~05:20 UTC). Base URL <code>https://agentdataco.com</code>. Machine-readable spec: <a href="/openapi.json">/openapi.json</a>.</p>
+<h2>Authentication</h2><p>Send your key in the <code>Authorization</code> header: <code>Authorization: Bearer adc_live_…</code>. Keys are emailed automatically right after checkout. Get a key: <a href="https://buy.stripe.com/eVq8wR3JRcyt6U59uLa7C00">Starter $19/month</a> (latest data + 30-day history) or <a href="https://buy.stripe.com/14AdRb5RZ6a57Y90Yfa7C01">Pro $49/month</a> (full archive, trends, priority watchlist, 100k requests).</p>
+<h2>Free sample (no key)</h2><pre><code>curl https://agentdataco.com/api/v1/sample
+curl "https://agentdataco.com/api/v1/sample?name=mcp-servers"</code></pre>
+<h2>Endpoints</h2><div style="overflow-x:auto"><table><thead><tr><th>Endpoint</th><th>Contents</th><th><code>since</code> field</th></tr></thead><tbody><tr><td><code>/api/v1/github-ai-repos</code></td><td>Repos tagged mcp, mcp-server, ai-agent(s), llm-agent, agentic-ai, autonomous-agents: top by stars plus new in the last 30 days. Stars, forks, language, license, topics.</td><td><code>created_at</code></td></tr><tr><td><code>/api/v1/show-hn-ai</code></td><td>Show HN posts matching AI, LLM, GPT, MCP, agent, Claude, RAG… with points and comments, newest first.</td><td><code>created_at</code></td></tr><tr><td><code>/api/v1/mcp-servers</code></td><td>Every active server in the official Model Context Protocol registry (latest versions): remotes, packages, repository.</td><td><code>publishedAt</code></td></tr><tr><td><code>/api/v1/ai-pricing</code></td><td>Daily snapshots of public AI/SaaS pricing pages: extracted plans and prices, plus what changed since the previous snapshot.</td><td><code>snapshotAt</code></td></tr><tr><td><code>/api/v1/llm-pricing</code></td><td>Every LLM on OpenRouter with $ per 1M input/output tokens, context length, modalities and new-model / price-change flags.</td><td><code>created</code></td></tr><tr><td><code>/api/v1/hf-trending</code></td><td>Top 100 trending models, Spaces and datasets with likes, downloads, task, license and trending score.</td><td><code>createdAt</code></td></tr></tbody></table></div>
+<h2>Query parameters</h2><ul><li><code>limit</code> — rows to return, 1–1000 (default 100)</li><li><code>offset</code> — pagination offset (default 0)</li><li><code>since</code> — ISO 8601 date/time; only rows on/after it (e.g. <code>2026-10-01</code>)</li><li><code>q</code> — case-insensitive text match across all fields</li></ul>
+<h2>Examples</h2><pre><code>curl -H "Authorization: Bearer $ADC_KEY" \
+  "https://agentdataco.com/api/v1/github-ai-repos?since=2026-10-01&amp;limit=20"
+
+curl -H "Authorization: Bearer $ADC_KEY" \
+  "https://agentdataco.com/api/v1/llm-pricing?q=anthropic"
+
+curl -H "Authorization: Bearer $ADC_KEY" \
+  "https://agentdataco.com/api/v1/show-hn-ai?since=2026-10-13T00:00:00Z"</code></pre>
+<h2>Response</h2><pre><code>{ "feed": "github-ai-repos", "title": "...", "source": "GitHub Search API",
+  "updatedAt": "2026-10-14T05:20:11Z", "total": 1283, "offset": 0, "limit": 20, "count": 20,
+  "data": [ { ... } ] }</code></pre>
+<h2>History &amp; trends</h2><p>Every daily snapshot is archived permanently. Query an entity's daily time series (metrics + rank) or the day's top movers:</p><pre><code>curl -H "Authorization: Bearer $ADC_KEY" \
+  "https://agentdataco.com/api/v1/github-ai-repos/history?entity=modelcontextprotocol/servers&amp;from=2026-10-01"
+
+curl -H "Authorization: Bearer $ADC_KEY" \
+  "https://agentdataco.com/api/v1/trends?window=7d&amp;feed=hf-trending"</code></pre><p>History depth by plan: <strong>Starter</strong> last 30 days, <strong>Pro</strong> full archive (<a href="https://buy.stripe.com/14AdRb5RZ6a57Y90Yfa7C01">$49/month</a>). Trends include 1d/7d/30d movers by stars/likes/points and events: new entities, LLM price changes, MCP version bumps, pricing-page changes. Public summary: <a href="/trends">/trends</a>.</p>
+<h2 id="mcp">MCP server (for AI agents)</h2><p>Remote MCP endpoint, Streamable HTTP: <code>https://agentdataco.com/mcp</code>. Free tools work without a key: <code>list_feeds</code>, <code>get_sample</code>, <code>lookup_entity</code>. Full tools need your API key as <code>Authorization: Bearer adc_live_…</code>: <code>get_github_ai_repos</code>, <code>get_show_hn_ai</code>, <code>get_mcp_servers</code>, <code>get_hf_trending</code>, <code>get_llm_pricing</code>, <code>get_ai_pricing</code>, <code>get_history</code>, <code>get_trends</code>. Calls count toward your monthly request quota.</p>
+<pre><code>// Claude Desktop / Cursor / any client supporting remote MCP (mcp.json)
+{ "mcpServers": { "agentdataco": {
+    "url": "https://agentdataco.com/mcp",
+    "headers": { "Authorization": "Bearer adc_live_..." } } } }
+
+# Claude Code
+claude mcp add --transport http agentdataco https://agentdataco.com/mcp \
+  --header "Authorization: Bearer adc_live_..."
+
+# raw JSON-RPC
+curl -X POST https://agentdataco.com/mcp -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</code></pre>
+<h2>Entity pages</h2><p>Public pages with latest metrics and history for ~2,000 top entities, rebuilt daily: <code>/repo/&lt;owner&gt;/&lt;name&gt;</code>, <code>/mcp/&lt;server&gt;</code>, <code>/llm/&lt;provider&gt;/&lt;model&gt;</code>, <code>/pricing/&lt;vendor&gt;</code>, <code>/hf/&lt;type&gt;/&lt;id&gt;</code>. Index: <a href="/sitemap.xml">sitemap.xml</a>.</p>
+<h2>Request coverage</h2><p>Need a pricing page or repo we don't track? Ask for it: <code>/api/v1/ai-pricing?url=https://example.com/pricing</code> or <code>/api/v1/github-ai-repos?repo=owner/name</code>. Untracked entities are added to our watchlist and collected from the next daily run.</p>
+<h2>Limits &amp; errors</h2><p>Starter includes 10,000 requests per calendar month (UTC); remaining quota is returned in <code>X-RateLimit-Remaining</code>. Errors: <code>401</code> missing/invalid/revoked key, <code>429</code> monthly limit reached, <code>400</code> bad parameter, <code>503</code> feed temporarily unavailable. Cancelling your subscription revokes the key. Lost your key or need more volume? <a href="mailto:hello@agentdataco.com">hello@agentdataco.com</a>.</p></section></main>
+<footer><p>Agent Data Co is a trading name of Transcend UK Holdings Ltd, registered in England &amp; Wales no. 15851774 · VAT GB499804133 · Office 101, 1 Eastman Road, Harrow, HA1 4WL, United Kingdom.</p><p><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/llms.txt">llms.txt</a> · <a href="mailto:hello@agentdataco.com">hello@agentdataco.com</a></p></footer></body></html>
