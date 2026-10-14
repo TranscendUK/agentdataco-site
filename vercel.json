@@ -48,6 +48,18 @@
  },
  "rewrites": [
   {
+   "source": "/demand",
+   "destination": "/api/trends-page?view=demand"
+  },
+  {
+   "source": "/leaderboard",
+   "destination": "/api/trends-page?view=leaderboard"
+  },
+  {
+   "source": "/badge/:p+",
+   "destination": "/api/page?badge=1&p=:p*"
+  },
+  {
    "source": "/.well-known/mcp-registry-auth",
    "destination": "/mcp-registry-auth.txt"
   },

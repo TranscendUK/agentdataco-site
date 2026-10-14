@@ -3,6 +3,8 @@ const { history, day, shift } = require('../../../lib/archive');
 const watchlist = require('../../../lib/watchlist');
 const guard = require('../../../lib/guard');
 const wm = require('../../../lib/wm');
+const demand = require('../../../lib/demand');
+const { momentumMap } = require('../../../lib/pages');
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_WINDOW = 90; const MAX_PAGE = 90; const DEF_PAGE = 31;
 module.exports = async (req, res) => {
@@ -21,9 +23,11 @@ module.exports = async (req, res) => {
   if (from > to) return send(res, 200, { feed: name, entity, from, to, plan: a.tier, clippedToPlan: true, count: 0, data: [] }, a.rl);
   const g = await guard.check(a, `h|${name}|${entity}`); if (g) return send(res, g.status, g.body, { ...a.rl, ...g.headers });
   const all = await history(name, entity, from, to);
+  await demand.log(req.headers['x-adc-channel'] === 'mcp' ? 'mcp' : 'api', name, all.length ? entity : null);
+  const mom = (await momentumMap(name).catch(() => ({})))[entity] || null;
   const page = all.slice(0, limit).map((r) => wm.row(a.h, name, entity, r));
   const next = all.length > limit ? all[limit].date : null;
   let queued = false;
   if (!all.length && !a.rec.test && watchlist.valid[name]) queued = await watchlist.request(name, entity, a.h).catch(() => false);
-  return send(res, 200, { feed: name, entity, from, to, plan: a.tier, historyDays: a.limits.historyDays, clippedToPlan: clipped, limit, count: page.length, nextCursor: next, data: page, ...(queued ? { watchlist: 'Entity not tracked yet; queued for daily collection.' } : {}) }, a.rl);
+  return send(res, 200, { feed: name, entity, from, to, plan: a.tier, historyDays: a.limits.historyDays, clippedToPlan: clipped, limit, count: page.length, nextCursor: next, adcMomentum: mom, data: page, ...(queued ? { watchlist: 'Entity not tracked yet; queued for daily collection.' } : {}) }, a.rl);
 };
